@@ -12,7 +12,7 @@ import {
   SidebarMenuItem,
   SidebarProvider,
 } from "@/components/ui/sidebar";
-
+import PokemonCard from "@/components/layout/PokemonCard";
 import { usePokemons } from "@/hooks/usePokemons";
 
 export default function SidebarLayout() {
@@ -81,33 +81,20 @@ export default function SidebarLayout() {
             </p>
           </SidebarFooter>
         </Sidebar>
-
-        <main className="min-w-0 flex-1 p-8">
-          {selectedPokemon ? (
-            <div className="flex flex-col items-center gap-4">
-              <p className="text-sm text-muted-foreground">
-                Nº {String(selectedPokemon.id).padStart(3, "0")}
-              </p>
-
-              <img
-                src={selectedPokemon.image}
-                alt={selectedPokemon.name}
-                className="size-48 object-contain"
-              />
-
-              <h1 className="text-3xl font-bold capitalize">
-                {selectedPokemon.name}
+        <main className="min-w-0 flex-1 bg-muted/30 p-6 md:p-10">
+          <div className="w-full max-w-6xl">
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold tracking-tight">
+                Minha Pokédex
               </h1>
-            </div>
-          ) : (
-            <div>
-              <h1 className="text-3xl font-bold">Minha Pokédex</h1>
 
               <p className="mt-2 text-muted-foreground">
-                Selecione um Pokémon no menu lateral.
+                Explore os Pokémon disponíveis.
               </p>
             </div>
-          )}
+
+            <PokemonCard pokemon={selectedPokemon} />
+          </div>
         </main>
       </div>
     </SidebarProvider>
