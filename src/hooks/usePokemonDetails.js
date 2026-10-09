@@ -1,43 +1,43 @@
 import { useEffect, useState } from "react";
 
-// Cache compartilhado entre todas as chamadas deste hook.
 const pokemonCache = new Map();
 
 export function usePokemonDetails(pokemonId) {
-  const [details, setDetails] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [result, setResult] = useState({
+    pokemonId: null,
+    details: null,
+    loading: false,
+    error: null,
+  });
 
   useEffect(() => {
-    if (!pokemonId) {
-      setDetails(null);
-      setLoading(false);
-      setError(null);
-      return;
-    }
+    if (!pokemonId) return;
 
-    // 1. Verifica se os dados já estão no cache.
-    const cachedPokemon = pokemonCache.get(pokemonId);
-
-    if (cachedPokemon) {
-      setDetails(cachedPokemon);
-      setLoading(false);
-      setError(null);
-      return;
-    }
-
-    // 2. Se não estiver no cache, consulta a API.
-    const controller = new AbortController();
+    let cancelled = false;
 
     async function fetchDetails() {
-      try {
-        setLoading(true);
-        setError(null);
-        setDetails(null);
+      const cachedPokemon = pokemonCache.get(pokemonId);
 
+      if (cachedPokemon) {
+        setResult({
+          pokemonId,
+          details: cachedPokemon,
+          loading: false,
+          error: null,
+        });
+        return;
+      }
+
+      setResult({
+        pokemonId,
+        details: null,
+        loading: true,
+        error: null,
+      });
+
+      try {
         const response = await fetch(
           `https://pokeapi.co/api/v2/pokemon/${pokemonId}`,
-          { signal: controller.signal },
         );
 
         if (!response.ok) {
@@ -46,7 +46,7 @@ export function usePokemonDetails(pokemonId) {
 
         const data = await response.json();
 
-        const pokemonDetails = {
+        const details = {
           id: data.id,
           name: data.name,
           image:
@@ -62,25 +62,55 @@ export function usePokemonDetails(pokemonId) {
           })),
         };
 
-        // 3. Guarda os dados para as próximas seleções.
-        pokemonCache.set(pokemonId, pokemonDetails);
+        pokemonCache.set(pokemonId, details);
 
-        setDetails(pokemonDetails);
-      } catch (err) {
-        if (err.name !== "AbortError") {
-          setError(err.message);
+        if (!cancelled) {
+          setResult({
+            pokemonId,
+            details,
+            loading: false,
+            error: null,
+          });
         }
-      } finally {
-        if (!controller.signal.aborted) {
-          setLoading(false);
+      } catch (err) {
+        if (!cancelled) {
+          setResult({
+            pokemonId,
+            details: null,
+            loading: false,
+            error: err.message,
+          });
         }
       }
     }
 
     fetchDetails();
 
-    return () => controller.abort();
+    return () => {
+      cancelled = true;
+    };
   }, [pokemonId]);
 
-  return { details, loading, error };
+  // Evita exibir os dados do Pokémon anterior durante a troca.
+  if (!pokemonId) {
+    return {
+      details: null,
+      loading: false,
+      error: null,
+    };
+  }
+
+  if (result.pokemonId !== pokemonId) {
+    return {
+      details: null,
+      loading: true,
+      error: null,
+    };
+  }
+
+  return {
+    details: result.details,
+    loading: result.loading,
+    error: result.error,
+  };
 }
