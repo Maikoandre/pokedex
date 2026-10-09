@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import { useEffect, useState } from "react";
 
 export function usePokemons() {
@@ -7,36 +6,41 @@ export function usePokemons() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    async function getPokemons() {
+    async function fetchPokemons() {
       try {
         setLoading(true);
         setError(null);
+
         const response = await fetch(
-          "https://pokeapi.co/api/v2/pokemon/limit=50&offset=0",
+          "https://pokeapi.co/api/v2/pokemon?limit=50&offset=0",
         );
+
         if (!response.ok) {
-          throw new Error("Não foi possivel buscar os pokémons.");
+          throw new Error("Não foi possível buscar os Pokémon.");
         }
+
         const data = await response.json();
-        const formattedPokemons = data.results.map((pokemons) => {
-          const id = Number(pokemons.url.split("/").filter(Boolean).pop());
+
+        const formattedPokemons = data.results.map((pokemon) => {
+          const id = Number(pokemon.url.split("/").filter(Boolean).pop());
+
+          return {
+            id: id,
+            name: pokemon.name,
+            image: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`,
+          };
         });
 
-        return {
-          id: formattedPokemons.id,
-          name: pokemons.name,
-          image: `https://raw.githubusercontent.com/PokeAPI/sprites/master/pokemon/${formattedPokemons.id}.png`,
-        };
+        setPokemons(formattedPokemons);
       } catch (err) {
-        setError(err);
+        setError(err.message);
       } finally {
         setLoading(false);
       }
     }
 
-    getPokemons();
-  }, [pokemons.name]);
+    fetchPokemons();
+  }, []);
 
   return { pokemons, loading, error };
 }
-

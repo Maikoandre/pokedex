@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -12,9 +13,12 @@ import {
   SidebarProvider,
 } from "@/components/ui/sidebar";
 
-import { LayoutGrid, Heart } from "lucide-react";
+import { usePokemons } from "@/hooks/usePokemons";
 
-export default function SidebarLayout({ children }) {
+export default function SidebarLayout() {
+  const { pokemons, loading, error } = usePokemons();
+  const [selectedPokemon, setSelectedPokemon] = useState(null);
+
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
@@ -39,19 +43,34 @@ export default function SidebarLayout({ children }) {
 
               <SidebarGroupContent>
                 <SidebarMenu>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton>
-                      <LayoutGrid />
-                      <span>Explorar Pokémon</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
+                  {loading && (
+                    <p className="px-3 py-2 text-sm text-muted-foreground">
+                      Carregando pokémon...
+                    </p>
+                  )}
 
-                  <SidebarMenuItem>
-                    <SidebarMenuButton>
-                      <Heart />
-                      <span>Favoritos</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
+                  {error && (
+                    <p className="px-3 py-2 text-sm text-destructive">
+                      {error}
+                    </p>
+                  )}
+
+                  {pokemons.map((pokemon) => (
+                    <SidebarMenuItem key={pokemon.id}>
+                      <SidebarMenuButton
+                        isActive={selectedPokemon?.id === pokemon.id}
+                        onClick={() => setSelectedPokemon(pokemon)}
+                      >
+                        <span className="w-8 shrink-0 text-xs text-muted-foreground">
+                          {String(pokemon.id).padStart(3, "0")}
+                        </span>
+
+                        <span className="truncate capitalize">
+                          {pokemon.name}
+                        </span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
@@ -62,7 +81,34 @@ export default function SidebarLayout({ children }) {
             </p>
           </SidebarFooter>
         </Sidebar>
-        <main className="min-w-0 flex-1 p-8">{children}</main>
+
+        <main className="min-w-0 flex-1 p-8">
+          {selectedPokemon ? (
+            <div className="flex flex-col items-center gap-4">
+              <p className="text-sm text-muted-foreground">
+                Nº {String(selectedPokemon.id).padStart(3, "0")}
+              </p>
+
+              <img
+                src={selectedPokemon.image}
+                alt={selectedPokemon.name}
+                className="size-48 object-contain"
+              />
+
+              <h1 className="text-3xl font-bold capitalize">
+                {selectedPokemon.name}
+              </h1>
+            </div>
+          ) : (
+            <div>
+              <h1 className="text-3xl font-bold">Minha Pokédex</h1>
+
+              <p className="mt-2 text-muted-foreground">
+                Selecione um Pokémon no menu lateral.
+              </p>
+            </div>
+          )}
+        </main>
       </div>
     </SidebarProvider>
   );
