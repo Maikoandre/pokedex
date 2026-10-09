@@ -4,7 +4,7 @@ Uma Pokédex web feita com **React** e **Vite**, que consome a [PokéAPI](https:
 
 A interface usa **Tailwind CSS v4** e componentes no estilo **shadcn/ui** (baseados em Radix UI), com um menu lateral para navegar entre os Pokémon.
 
-<img src="/home/maiko/Desktop/Projects/pokedex/src/assets/Screenshot_20261009_135134.png"/>
+![Print da Tela Principal]("src/assets/Screenshot_20261009_135134.png")
 
 ## Funcionalidades
 
