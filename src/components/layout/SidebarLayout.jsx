@@ -17,17 +17,11 @@ import { LayoutGrid, Heart } from "lucide-react";
 export default function SidebarLayout({ children }) {
   return (
     <SidebarProvider>
-      {" "}
       <div className="flex min-h-screen w-full">
-        {" "}
         <Sidebar>
-          {" "}
           <SidebarHeader>
-            {" "}
             <div className="flex items-center gap-2 px-2 py-2">
-              {" "}
               <div className="flex size-8 items-center justify-center rounded-lg text-primary-foreground">
-                {" "}
                 <div className="flex size-8 items-center justify-center rounded-lg">
                   <img
                     src="/pokeball.png"
@@ -41,7 +35,7 @@ export default function SidebarLayout({ children }) {
           </SidebarHeader>
           <SidebarContent>
             <SidebarGroup>
-              <SidebarGroupLabel>Menu principal</SidebarGroupLabel>
+              <SidebarGroupLabel>Pokémon</SidebarGroupLabel>
 
               <SidebarGroupContent>
                 <SidebarMenu>
