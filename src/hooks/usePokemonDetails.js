@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 
+// Cache compartilhado entre todas as chamadas deste hook.
+const pokemonCache = new Map();
+
 export function usePokemonDetails(pokemonId) {
   const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -8,9 +11,22 @@ export function usePokemonDetails(pokemonId) {
   useEffect(() => {
     if (!pokemonId) {
       setDetails(null);
+      setLoading(false);
+      setError(null);
       return;
     }
 
+    // 1. Verifica se os dados já estão no cache.
+    const cachedPokemon = pokemonCache.get(pokemonId);
+
+    if (cachedPokemon) {
+      setDetails(cachedPokemon);
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
+    // 2. Se não estiver no cache, consulta a API.
     const controller = new AbortController();
 
     async function fetchDetails() {
@@ -25,12 +41,12 @@ export function usePokemonDetails(pokemonId) {
         );
 
         if (!response.ok) {
-          throw new Error("Não foi possível carregar os detalhes.");
+          throw new Error("Não foi possível carregar os detalhes do Pokémon.");
         }
 
         const data = await response.json();
 
-        setDetails({
+        const pokemonDetails = {
           id: data.id,
           name: data.name,
           image:
@@ -44,7 +60,12 @@ export function usePokemonDetails(pokemonId) {
             name: item.stat.name,
             value: item.base_stat,
           })),
-        });
+        };
+
+        // 3. Guarda os dados para as próximas seleções.
+        pokemonCache.set(pokemonId, pokemonDetails);
+
+        setDetails(pokemonDetails);
       } catch (err) {
         if (err.name !== "AbortError") {
           setError(err.message);
